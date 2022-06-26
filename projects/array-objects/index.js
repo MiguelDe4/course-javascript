@@ -42,15 +42,12 @@ function map(array, fn) {
    reduce([1, 2, 3], (all, current) => all + current) // 6
  */
 function reduce(array, fn, initial = 0) {
-  let i = 0;
-  if (array.length < 2) {
-    i = 1;
-    initial = array[0];
-  }
+  let x = initial || array[0],
+    i = initial ? 0 : 1;
   for (; i < array.length; i++) {
-    initial = fn(initial, array[i], i, array);
+    x = fn(x, array[i], i, array);
   }
-  return initial;
+  return x;
 }
 
 /*
