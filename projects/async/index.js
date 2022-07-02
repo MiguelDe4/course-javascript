@@ -39,8 +39,27 @@ const homeworkContainer = document.querySelector('#app');
  Массив городов пожно получить отправив асинхронный запрос по адресу
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
  */
-function loadTowns() {}
-
+function loadTowns() {
+  return new Promise(function (resolve) {
+    fetch('https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json')
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((towns) => {
+        const sortTowns = towns.sort((a, b) => {
+          if (a.name > b.name) {
+            return 1;
+          }
+          if (a.name < b.name) {
+            return -1;
+          }
+          return 0;
+        });
+        resolve(sortTowns);
+        console.log(sortTowns);
+      });
+  });
+}
 /*
  Функция должна проверять встречается ли подстрока chunk в строке full
  Проверка должна происходить без учета регистра символов
@@ -52,7 +71,9 @@ function loadTowns() {}
    isMatching('Moscow', 'SCO') // true
    isMatching('Moscow', 'Moscov') // false
  */
-function isMatching(full, chunk) {}
+function isMatching(full, chunk) {
+  return full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1;
+}
 
 /* Блок с надписью "Загрузка" */
 const loadingBlock = homeworkContainer.querySelector('#loading-block');
@@ -67,8 +88,42 @@ const filterInput = homeworkContainer.querySelector('#filter-input');
 /* Блок с результатами поиска */
 const filterResult = homeworkContainer.querySelector('#filter-result');
 
-retryButton.addEventListener('click', () => {});
+retryButton.addEventListener('click', () => {
+  tryLoad();
+});
 
-filterInput.addEventListener('input', function () {});
+filterInput.addEventListener('input', function () {
+  updateFilter(this.value);
+});
+
+let towns = [];
+loadingFailedBlock.style.block = 'none';
+filterBlock.style.block = 'none';
+
+async function tryLoad() {
+  try {
+    towns = await loadTowns();
+    loadingBlock.style.block = 'none';
+    loadingFailedBlock.style.block = 'none';
+    filterBlock.style.block = 'block';
+  } catch (e) {
+    loadingBlock.style.block = 'none';
+    loadingFailedBlock.style.block = 'block';
+  }
+}
+
+tryLoad();
+
+function updateFilter(filter) {
+  const fragment = document.createDocumentFragment();
+  for (const town in towns) {
+    if (isMatching(town.name, filter)) {
+      const div = document.createElement('div');
+      div.textContent = town.name;
+      fragment.append(div);
+    }
+  }
+  filterResult.append(fragment);
+}
 
 export { loadTowns, isMatching };
