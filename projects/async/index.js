@@ -40,25 +40,21 @@ const homeworkContainer = document.querySelector('#app');
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
  */
 function loadTowns() {
-  return new Promise(function (resolve) {
-    fetch('https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json')
-      .then((resp) => {
-        return resp.json();
+  return fetch('https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json')
+    .then((resp) => {
+      return resp.json();
+    })
+    .then((towns) =>
+      towns.sort((a, b) => {
+        if (a.name > b.name) {
+          return 1;
+        }
+        if (a.name < b.name) {
+          return -1;
+        }
+        return 0;
       })
-      .then((towns) => {
-        const sortTowns = towns.sort((a, b) => {
-          if (a.name > b.name) {
-            return 1;
-          }
-          if (a.name < b.name) {
-            return -1;
-          }
-          return 0;
-        });
-        resolve(sortTowns);
-        console.log(sortTowns);
-      });
-  });
+    );
 }
 /*
  Функция должна проверять встречается ли подстрока chunk в строке full
@@ -97,27 +93,31 @@ filterInput.addEventListener('input', function () {
 });
 
 let towns = [];
-loadingFailedBlock.style.block = 'none';
-filterBlock.style.block = 'none';
+loadingFailedBlock.classList.add('hidden');
+filterBlock.classList.add('hidden');
+
+// loadingFailedBlock.style.visibility = 'hidden';
+// filterBlock.style.visibility = 'hidden';
 
 async function tryLoad() {
   try {
     towns = await loadTowns();
-    loadingBlock.style.block = 'none';
-    loadingFailedBlock.style.block = 'none';
-    filterBlock.style.block = 'block';
+    loadingBlock.classList.add('hidden');
+    loadingFailedBlock.classList.add('hidden');
+    filterBlock.classList.remove('hidden');
   } catch (e) {
-    loadingBlock.style.block = 'none';
-    loadingFailedBlock.style.block = 'block';
+    loadingBlock.classList.add('hidden');
+    loadingFailedBlock.classList.remove('hidden');
   }
 }
 
 tryLoad();
 
 function updateFilter(filter) {
+  filterResult.innerHTML = '';
   const fragment = document.createDocumentFragment();
-  for (const town in towns) {
-    if (isMatching(town.name, filter)) {
+  for (const town of towns) {
+    if (filter && isMatching(town.name, filter)) {
       const div = document.createElement('div');
       div.textContent = town.name;
       fragment.append(div);
