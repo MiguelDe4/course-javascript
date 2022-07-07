@@ -45,8 +45,65 @@ const addButton = homeworkContainer.querySelector('#add-button');
 // таблица со списком cookie
 const listTable = homeworkContainer.querySelector('#list-table tbody');
 
-filterNameInput.addEventListener('input', function () {});
+filterNameInput.addEventListener('input', function () {
+  listTable.innerHTML = '';
+  renderFilterCookie(collectCookie(), filterNameInput.value);
+});
 
-addButton.addEventListener('click', () => {});
+addButton.addEventListener('click', () => {
+  addCookie(addNameInput, addValueInput, collectCookie());
+  listTable.innerHTML = '';
+  renderFilterCookie(collectCookie(), filterNameInput.value);
+});
 
-listTable.addEventListener('click', (e) => {});
+// listTable.addEventListener('click', (e) => {});
+
+function isMatching(full, chunk) {
+  return full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1;
+}
+
+function collectCookie() {
+  return document.cookie.split('; ').reduce((prev, current) => {
+    const [name, value] = current.split('=');
+    prev[name] = value;
+    if (value !== undefined) {
+      return prev;
+    }
+  }, {});
+}
+
+function renderFilterCookie(cookies, filter = '') {
+  for (const cookie in cookies) {
+    if (
+      (filter && isMatching(cookie, filter)) ||
+      (filter && isMatching(cookies[cookie], filter))
+    ) {
+      renderCookie(cookie, cookies);
+    }
+    if (filter === '') {
+      renderCookie(cookie, cookies);
+    }
+  }
+}
+
+function renderCookie(cookie, cookies) {
+  const row = listTable.insertRow(listTable.rows.length);
+  const cell = row.insertCell(0);
+  cell.innerText = cookie;
+  const cell2 = row.insertCell(1);
+  cell2.innerText = cookies[cookie];
+  const cell3 = row.insertCell(2);
+  const button = document.createElement('BUTTON');
+  button.textContent = 'Удалить';
+  cell3.appendChild(button);
+  button.addEventListener('click', function () {
+    listTable.removeChild(row);
+    document.cookie = cookie + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  });
+}
+
+function addCookie(name, value) {
+  document.cookie = name.value + '=' + value.value + '; /Path=/;';
+}
+
+renderFilterCookie(collectCookie());
